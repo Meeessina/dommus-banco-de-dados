@@ -153,69 +153,6 @@ LOCK TABLES `movimentacoes_itens` WRITE;
 INSERT INTO `movimentacoes_itens` VALUES (1,10,1,1),(2,15,1,1),(3,15,1,2),(4,15,1,1);
 /*!40000 ALTER TABLE `movimentacoes_itens` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `saida_sem_estoque` BEFORE INSERT ON `movimentacoes_itens` FOR EACH ROW begin
-	declare v_tipo varchar(100);	
-    declare v_estoque int;
-    select tipo
-    into v_tipo 
-    from movimentacoes
-    where  id_movimentacao = NEW.id_movimentacao;
-    select quantidade 
-    into v_estoque
-    from produtos 
-    where id_produto = new.id_produto;
-    if v_tipo = "saida" and  new.quantidade > v_estoque then
-    SIGNAL SQLSTATE '45000'
-	SET MESSAGE_TEXT = 'Estoque insuficiente';
-end if;
-end */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `atualizar_estoque` AFTER INSERT ON `movimentacoes_itens` FOR EACH ROW begin
-declare v_tipo varchar(10);
-select tipo
-into v_tipo
-from movimentacoes 
-where id_movimentacao= new.id_movimentacao;
-if v_tipo = 'entrada' then 
-update produtos
-set quantidade = quantidade+new.quantidade
-where id_produto= new.id_produto;
-
-elseif v_tipo = 'saida' then
-update produtos
-set  quantidade=quantidade-new.quantidade
-where id_produto = new.id_produto;
-
-end if;
-
-end */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `produtos`
@@ -249,25 +186,6 @@ LOCK TABLES `produtos` WRITE;
 INSERT INTO `produtos` VALUES (1,'videogame',1,1,'console portatil',500.00,5),(2,'televisão',1,1,'televisão',5500.50,15);
 /*!40000 ALTER TABLE `produtos` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `auditoria_produtos` AFTER UPDATE ON `produtos` FOR EACH ROW begin
-insert into logs_auditoria(tabela_afetada, operacao,id_registro,valor_anterior,valor_novo,usuario)
-values('produtos','update',new.id_produto,concat('preço: ',old.preco,'|quantidade:',old.quantidade),concat('preço novo: ',new.preco,'|quantidade:',new.quantidade),user());
-
-end */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `usuarios`
